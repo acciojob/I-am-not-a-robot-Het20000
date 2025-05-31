@@ -1,70 +1,71 @@
 // script.js
-
-const images = ['img1.png', 'img2.png', 'img3.png', 'img4.png', 'img5.png'];
 let selectedImages = [];
-let duplicateIndex = Math.floor(Math.random() * 5);
-let imageSet = [];
+let imagePairs = [];
+const numImages = 6;
 
-// Function to shuffle images and create the image set
+// Function to randomly shuffle images
 function shuffleImages() {
-    let shuffledImages = [...images];
-    let duplicateImage = shuffledImages[duplicateIndex];
-    shuffledImages.push(duplicateImage);
-    shuffledImages.sort(() => Math.random() - 0.5);
-    imageSet = shuffledImages;
-
-    // Render images
-    renderImages();
+    const images = ['img1', 'img2', 'img3', 'img4', 'img5'];
+    const randomIndex = Math.floor(Math.random() * images.length);
+    const duplicateImage = images[randomIndex];
+    const uniqueImages = [...images];
+    uniqueImages.push(duplicateImage);
+    
+    // Shuffle the images
+    for (let i = uniqueImages.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [uniqueImages[i], uniqueImages[j]] = [uniqueImages[j], uniqueImages[i]];
+    }
+    return uniqueImages;
 }
 
-// Function to render images
-function renderImages() {
-    const container = document.getElementById('image-container');
-    container.innerHTML = '';
+// Display images on the page
+function displayImages() {
+    const imagesContainer = document.getElementById("images");
+    imagesContainer.innerHTML = ""; // Clear previous images
+    imagePairs = shuffleImages();
 
-    imageSet.forEach((src, index) => {
-        const img = document.createElement('img');
-        img.src = src;
-        img.alt = `Image ${index + 1}`;
-        img.onclick = () => selectImage(src);
-        container.appendChild(img);
+    imagePairs.forEach(image => {
+        const imgElem = document.createElement("img");
+        imgElem.src = image + '.png'; // Assuming image paths
+        imgElem.classList.add('image');
+        imgElem.addEventListener('click', () => selectImage(image));
+        imagesContainer.appendChild(imgElem);
     });
 }
 
-// Function to handle image selection
-function selectImage(src) {
-    if (selectedImages.includes(src)) {
-        return; // Prevent selecting the same image twice
-    }
-    
-    selectedImages.push(src);
-    document.getElementById('reset').style.display = 'inline';
-
-    if (selectedImages.length === 2) {
-        document.getElementById('verify').style.display = 'inline';
+// Handle image selection
+function selectImage(image) {
+    if (!selectedImages.includes(image)) {
+        selectedImages.push(image);
+        if (selectedImages.length === 1) {
+            document.getElementById("reset").style.display = 'inline';
+        }
+        if (selectedImages.length === 2) {
+            document.getElementById("verify").style.display = 'inline';
+        }
     }
 }
 
-// Function to reset the selection
-document.getElementById('reset').onclick = () => {
+// Reset function
+document.getElementById("reset").addEventListener('click', () => {
     selectedImages = [];
-    document.getElementById('reset').style.display = 'none';
-    document.getElementById('verify').style.display = 'none';
-    document.getElementById('para').innerText = '';
-};
+    document.getElementById("reset").style.display = 'none';
+    document.getElementById("verify").style.display = 'none';
+    document.getElementById("para").innerHTML = "";
+    displayImages();
+});
 
-// Function to verify the selection
-document.getElementById('verify').onclick = () => {
-    const [firstImage, secondImage] = selectedImages;
-
-    if (firstImage === secondImage) {
-        document.getElementById('para').innerText = "You are a human. Congratulations!";
+// Verification process
+document.getElementById("verify").addEventListener('click', () => {
+    const message = document.getElementById("para");
+    if (selectedImages[0] === selectedImages[1]) {
+        message.innerHTML = "You are a human. Congratulations!";
     } else {
-        document.getElementById('para').innerText = "We can't verify you as a human. You selected the non-identical tiles.";
+        message.innerHTML = "We can't verify you as a human. You selected the non-identical tiles.";
     }
+    document.getElementById("verify").style.display = 'none';
+});
 
-    document.getElementById('verify').style.display = 'none';
-};
-
-// Initialize the game on page load
-window.onload = shuffleImages;
+// Initialize the game
+window.onload = displayImages;
